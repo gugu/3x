@@ -6,10 +6,13 @@ import (
     "lukechampine.com/uint128"
 )
 
-const THREAD_CHUNK = 10_000_000
+const THREAD_CHUNK = 100_000_000
 
 func checkNumber(iterated uint128.Uint128, guard chan struct{}) {
-    for i := iterated; i.Cmp(iterated.Add64(10_000_000)) == -1; i = i.Add64(1) {
+    if (iterated.Mod64(2) == 0) {
+        iterated = iterated.Add64(1)
+    }
+    for i := iterated; i.Cmp(iterated.Add64(THREAD_CHUNK)) == -1; i = i.Add64(2) {
         x := i
         for {
             if (x.Cmp(iterated) == -1) {
@@ -26,6 +29,7 @@ func checkNumber(iterated uint128.Uint128, guard chan struct{}) {
 
 func main() {
     iterated := uint128.From64(^uint64(0))
+    // iterated := uint128.From64(uint64(2))
     printLimit := 0;
     t := time.Now()
     guard := make(chan struct{}, runtime.NumCPU())
